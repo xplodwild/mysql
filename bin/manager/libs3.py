@@ -47,3 +47,4 @@ class S3(object):
         k = Key(self.bucket)
         k.key = backup_id
         k.set_contents_from_filename(infile)
+        return('{}/{}'.format(self.bucket, backup_id))

@@ -55,3 +55,4 @@ class Manta(object):
         mpath = '{}/{}'.format(self.bucket, backup_id)
         with open(infile, 'r') as f:
             self.client.put_object(mpath, file=f)
+        return mpath

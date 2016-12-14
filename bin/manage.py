@@ -260,8 +260,8 @@ def write_snapshot(node):
                                '--stream=tar',
                                '/tmp/backup'], stdout=f)
     log.info('snapshot completed, uploading to object store')
-    node.storage.put_backup(backup_id, '/tmp/backup.tar')
-    log.info('snapshot uploaded to %s/%s', node.storage.bucket, backup_id)
+    saved_path = node.storage.put_backup(backup_id, '/tmp/backup.tar')
+    log.info('snapshot uploaded to %s', saved_path)
 
     # write the filename of the binlog to Consul so that we know if
     # we've rotated since the last backup.
