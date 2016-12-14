@@ -103,6 +103,7 @@ Pass these variables via an `_env` file. The included `setup.sh` can be used to 
 
 - `MYSQL_USER`: this user will be set up as the default non-root user on the node
 - `MYSQL_PASSWORD`: this user will be set up as the default non-root user on the node
+- `BACKUP_DRIVER`: which storage provider you are using to store and retrieve snapshots. Options are `manta` and `s3`. Defauls to `manta`.
 - `MANTA_URL`: the full Manta endpoint URL. (ex. `https://us-east.manta.joyent.com`)
 - `MANTA_USER`: the Manta account name.
 - `MANTA_SUBUSER`: the Manta subuser account name, if any.
@@ -110,6 +111,11 @@ Pass these variables via an `_env` file. The included `setup.sh` can be used to 
 - `MANTA_KEY_ID`: the MD5-format ssh key id for the Manta account/subuser (ex. `1a:b8:30:2e:57:ce:59:1d:16:f6:19:97:f2:60:2b:3d`); the included `setup.sh` will encode this automatically
 - `MANTA_PRIVATE_KEY`: the private ssh key for the Manta account/subuser; the included `setup.sh` will encode this automatically
 - `MANTA_BUCKET`: the path on Manta where backups will be stored. (ex. `/myaccount/stor/triton-mysql`); the bucket must already exist and be writeable by the `MANTA_USER`/`MANTA_PRIVATE_KEY`
+
+- `AWS_ACCESS_KEY`: AWS API access key to use (if `BACKUP_DRIVER = "s3"`)
+- `AWS_SECRET_ACCESS_KEY`: AWS API secret key to use (if `BACKUP_DRIVER = "s3"`)
+- `AWS_REGION`: AWS region in which the s3 bucket is stored, defaults to `us-east-1` (a.k.a. `us-standard`) access key to use (if `BACKUP_DRIVER = "s3"`)
+- `AWS_BUCKET`: AWS bucket to use (if `BACKUP_DRIVER = "s3"`)
 
 These variables are optional but you most likely want them:
 

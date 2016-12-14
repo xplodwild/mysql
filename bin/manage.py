@@ -10,6 +10,7 @@ import sys
 from manager.containerpilot import ContainerPilot
 from manager.libconsul import Consul
 from manager.libmanta import Manta
+from manager.libs3 import S3
 from manager.libmysql import MySQL, MySQLError
 from manager.utils import \
     log, get_ip, debug, \
@@ -23,10 +24,10 @@ class Node(object):
     Node represents the state of our running container and carries
     around the MySQL config, and clients for Consul and Manta.
     """
-    def __init__(self, mysql=None, cp=None, consul=None, manta=None):
+    def __init__(self, mysql=None, cp=None, consul=None, storage=None):
         self.mysql = mysql
         self.consul = consul
-        self.manta = manta
+        self.storage = storage
         self.cp = cp
 
         self.hostname = socket.gethostname()
@@ -104,7 +105,7 @@ def pre_start(node):
     if not os.path.isdir(os.path.join(my.datadir, 'mysql')):
         last_backup = node.consul.has_snapshot()
         if last_backup:
-            node.manta.get_backup(last_backup)
+            node.storage.get_backup(last_backup)
             my.restore_from_snapshot(last_backup)
         else:
             if not my.initialize_db():
@@ -259,8 +260,8 @@ def write_snapshot(node):
                                '--stream=tar',
                                '/tmp/backup'], stdout=f)
     log.info('snapshot completed, uploading to object store')
-    node.manta.put_backup(backup_id, '/tmp/backup.tar')
-    log.info('snapshot uploaded to %s/%s', node.manta.bucket, backup_id)
+    node.storage.put_backup(backup_id, '/tmp/backup.tar')
+    log.info('snapshot uploaded to %s/%s', node.storage.bucket, backup_id)
 
     # write the filename of the binlog to Consul so that we know if
     # we've rotated since the last backup.
@@ -389,10 +390,19 @@ def main():
             sys.exit(1)
 
     my = MySQL()
-    manta = Manta()
     cp = ContainerPilot()
     cp.load()
-    node = Node(mysql=my, consul=consul, manta=manta, cp=cp)
+
+    # what storage backend did we use?
+    driver = os.environ.get('BACKUP_DRIVER','manta').lower()
+    if driver == 'manta':
+        storage = Manta()
+    elif driver == 's3':
+        storage = S3()
+    else:
+        storage = None
+
+    node = Node(mysql=my, consul=consul, storage=storage, cp=cp)
 
     cmd(node)
 

@@ -11,7 +11,7 @@ RUN set -ex \
     && apt-get update \
     && apt-get install -y $buildDeps $runDeps --no-install-recommends \
     # \
-    # get Python drivers MySQL, Consul, and Manta \
+    # get Python drivers MySQL, Consul, Manta and S3 \
     # \
     && curl -Lvo /tmp/mysql-connector.deb http://dev.mysql.com/get/Downloads/Connector-Python/mysql-connector-python_2.1.3-1debian8.2_all.deb \
     && dpkg -i /tmp/mysql-connector.deb \
@@ -22,6 +22,7 @@ RUN set -ex \
     && pip install \
        python-Consul==0.4.7 \
        manta==2.5.0 \
+       boto==2.44.0 \
        mock==2.0.0 \
     # \
     # Add Consul from https://releases.hashicorp.com/consul \
