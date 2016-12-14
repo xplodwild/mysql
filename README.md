@@ -180,3 +180,15 @@ On Triton, there's no need to use data volumes because the performance hit you n
 ### Using an existing database
 
 If you start your MySQL container instance with a data directory that already contains a database (specifically, a mysql subdirectory), the pre-existing database won't be changed in any way.
+
+
+### Adding new storage backends
+The currently supported storage backends are AWS S3 and Joyent Manta. If you want to develop a new one to add in, we would love to see it. Here is the interface it must implement.
+
+* It should be importable from a `.py` library in a known location, preferably `bin/manager/`.
+* The imported item should be an instantiable class.
+* The class should read its necessary settings from environment variables on class instantiation
+* It should implement the instance method `get_backup(backup_id)` which retrieves the backup to a temporary file `/tmp/backup/{backup_id}`
+* It should implement the instance method `put_backup(backup_id, infile)` which stores the backup under the ID `backup_id` from the entire dump file located at `infile`. `put_backup()` should return a string with the path to the backup, e.g. `{bucket_name}/{backup_id}`
+
+How the driver stores backups in the backend is up to you entirely, as long as they are retrievable via `{bucket_id}`.
