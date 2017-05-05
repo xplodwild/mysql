@@ -103,6 +103,7 @@ Pass these variables via an `_env` file. The included `setup.sh` can be used to 
 
 - `MYSQL_USER`: this user will be set up as the default non-root user on the node
 - `MYSQL_PASSWORD`: this user will be set up as the default non-root user on the node
+- `BACKUP_DRIVER`: which storage provider you are using to store and retrieve snapshots. Options are `manta` and `s3`. Defauls to `manta`.
 - `MANTA_URL`: the full Manta endpoint URL. (ex. `https://us-east.manta.joyent.com`)
 - `MANTA_USER`: the Manta account name.
 - `MANTA_SUBUSER`: the Manta subuser account name, if any.
@@ -110,6 +111,11 @@ Pass these variables via an `_env` file. The included `setup.sh` can be used to 
 - `MANTA_KEY_ID`: the MD5-format ssh key id for the Manta account/subuser (ex. `1a:b8:30:2e:57:ce:59:1d:16:f6:19:97:f2:60:2b:3d`); the included `setup.sh` will encode this automatically
 - `MANTA_PRIVATE_KEY`: the private ssh key for the Manta account/subuser; the included `setup.sh` will encode this automatically
 - `MANTA_BUCKET`: the path on Manta where backups will be stored. (ex. `/myaccount/stor/triton-mysql`); the bucket must already exist and be writeable by the `MANTA_USER`/`MANTA_PRIVATE_KEY`
+
+- `AWS_ACCESS_KEY`: AWS API access key to use (if `BACKUP_DRIVER = "s3"`)
+- `AWS_SECRET_ACCESS_KEY`: AWS API secret key to use (if `BACKUP_DRIVER = "s3"`)
+- `AWS_REGION`: AWS region in which the s3 bucket is stored, defaults to `us-east-1` (a.k.a. `us-standard`) access key to use (if `BACKUP_DRIVER = "s3"`)
+- `AWS_BUCKET`: AWS bucket to use (if `BACKUP_DRIVER = "s3"`)
 
 These variables are optional but you most likely want them:
 
@@ -175,3 +181,15 @@ On Triton, there's no need to use data volumes because the performance hit you n
 ### Using an existing database
 
 If you start your MySQL container instance with a data directory that already contains a database (specifically, a mysql subdirectory), the pre-existing database won't be changed in any way.
+
+
+### Adding new storage backends
+The currently supported storage backends are AWS S3 and Joyent Manta. If you want to develop a new one to add in, we would love to see it. Here is the interface it must implement.
+
+* It should be importable from a `.py` library in a known location, preferably `bin/manager/`.
+* The imported item should be an instantiable class.
+* The class should read its necessary settings from environment variables on class instantiation
+* It should implement the instance method `get_backup(backup_id)` which retrieves the backup to a temporary file `/tmp/backup/{backup_id}`
+* It should implement the instance method `put_backup(backup_id, infile)` which stores the backup under the ID `backup_id` from the entire dump file located at `infile`. `put_backup()` should return a string with the path to the backup, e.g. `{bucket_name}/{backup_id}`
+
+How the driver stores backups in the backend is up to you entirely, as long as they are retrievable via `{bucket_id}`.
