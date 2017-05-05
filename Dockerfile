@@ -23,6 +23,7 @@ RUN set -ex \
        python-Consul==0.4.7 \
        manta==2.5.0 \
        boto==2.44.0 \
+       scp==0.10.2 \
        mock==2.0.0 \
     # \
     # Add Consul from https://releases.hashicorp.com/consul \

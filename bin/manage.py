@@ -11,6 +11,7 @@ from manager.containerpilot import ContainerPilot
 from manager.libconsul import Consul
 from manager.libmanta import Manta
 from manager.libs3 import S3
+from manager.libscp import SCP
 from manager.libmysql import MySQL, MySQLError
 from manager.utils import \
     log, get_ip, debug, \
@@ -406,6 +407,8 @@ def main():
         storage = Manta()
     elif driver == 's3':
         storage = S3()
+    elif driver == 'scp':
+        storage = SCP()
     else:
         storage = None
 
